@@ -1,9 +1,9 @@
 #pragma once
 
-//
+//    OPTIMIZED (HOPEFULLY)
 //    BIT STYLE REPRESENTATION
 //    32 BITS / 4 BYTES FOR SIZE OF STORED DATA
-//    8 BITS * 2147483647 * 2 MAXIMUM UNITS PER INTEGER
+//    8 BITS * 2147483647 * 2 MAXIMUM UNITS
 
 void _inline bitwiseset(unsigned char* i, unsigned char pos, bool val) {
 	if (val)
@@ -180,76 +180,35 @@ bool IntNotEqual(void* A, void* B) {
 }
 
 void* IntAdd(void* First, void* Second) {
-	void* ReturnValue;
+	void* ReturnValue = nullptr;
 
-	if (!IntGetSign(First) && !IntGetSign(Second)) { //both positive
+	if (IntGetSign(First) == IntGetSign(Second)) { //both positive
 		//add from the smallest to largest place
-		int SizeA = IntGetSize(First);
-		int SizeB = IntGetSize(Second);
-		int SizeLarge = SizeA;
-		if (SizeB > SizeLarge)
-			SizeLarge = SizeA;
-
-		ReturnValue = IntCreate(SizeLarge);
-
-		int Carry = 0;
-		int CalculatedValue1 = 0;
-		int CalculatedValue2 = 0;
-		for (unsigned int i = 0; i < SizeLarge; i++) {
-			CalculatedValue1 = bitwisereadleft(reinterpret_cast<unsigned char*>(First)[i + sizeof(int)]) + bitwisereadleft(reinterpret_cast<unsigned char*>(Second)[i + sizeof(int)]) + Carry;
-			Carry = 0;
-			if (CalculatedValue1 >= 10) {
-				Carry++;
-				CalculatedValue1 -= 10;
+		int Sizes[3] = { abs(IntGetSize(First)),abs(IntGetSize(Second)), 0 }; // [0] = FirstSize, [1] = SecondSize, [2] = LargestSize
+		Sizes[2] = Sizes[0];
+		if (Sizes[1] > Sizes[2])
+			Sizes[2] = Sizes[1];
+		ReturnValue = IntCreate(Sizes[2] * (IntGetSign(First) ? -1 : 1));
+		int Calc[3] = { 0,0,0 }; //[0] = first, [1] = second, [2] = carry
+		for (unsigned int i = 0; i < Sizes[2]; i++) {
+			Calc[0] = bitwisereadleft(reinterpret_cast<unsigned char*>(First)[i + sizeof(int)]) + bitwisereadleft(reinterpret_cast<unsigned char*>(Second)[i + sizeof(int)]) + Calc[2];
+			Calc[2] = 0;
+			if (Calc[0] >= 10) {
+				Calc[2]++;
+				Calc[0] -= 10;
 			}
-			CalculatedValue2 = bitwisereadright(reinterpret_cast<unsigned char*>(First)[i + sizeof(int)]) + bitwisereadright(reinterpret_cast<unsigned char*>(Second)[i + sizeof(int)]) +Carry;
-			Carry = 0;
-			if (CalculatedValue2 >= 10) {
-				Carry++;
-				CalculatedValue2 -= 10;
+			Calc[1] = bitwisereadright(reinterpret_cast<unsigned char*>(First)[i + sizeof(int)]) + bitwisereadright(reinterpret_cast<unsigned char*>(Second)[i + sizeof(int)]) + Calc[2];
+			Calc[2] = 0;
+			if (Calc[1] >= 10) {
+				Calc[2]++;
+				Calc[1] -= 10;
 			}
-			bitwisewriteleftptr(&reinterpret_cast<unsigned char*>(ReturnValue)[i + sizeof(int)], CalculatedValue1);
-			bitwisewriterightptr(&reinterpret_cast<unsigned char*>(ReturnValue)[i + sizeof(int)], CalculatedValue2);
+			bitwisewriteleftptr(&reinterpret_cast<unsigned char*>(ReturnValue)[i + sizeof(int)], Calc[0]);
+			bitwisewriterightptr(&reinterpret_cast<unsigned char*>(ReturnValue)[i + sizeof(int)], Calc[1]);
 		}
-
-		if (Carry > 0)
-			IntSetPlace(&ReturnValue, SizeLarge * 2 + 1, Carry);
-
+		if (Calc[2] > 0)
+			IntSetPlace(&ReturnValue, Sizes[2] * 2 + 1, Calc[2]);
 		return ReturnValue;
 	}
-	else if (IntGetSign(First) && IntGetSign(Second)) { //both positive
-		//add from the smallest to largest place
-		int SizeA = abs(IntGetSize(First));
-		int SizeB = abs(IntGetSize(Second));
-		int SizeLarge = SizeA;
-		if (SizeB > SizeLarge)
-			SizeLarge = SizeA;
-
-		ReturnValue = IntCreate(SizeLarge*-1);
-
-		int Carry = 0;
-		int CalculatedValue1 = 0;
-		int CalculatedValue2 = 0;
-		for (unsigned int i = 0; i < SizeLarge; i++) {
-			CalculatedValue1 = bitwisereadleft(reinterpret_cast<unsigned char*>(First)[i + sizeof(int)]) + bitwisereadleft(reinterpret_cast<unsigned char*>(Second)[i + sizeof(int)]) + Carry;
-			Carry = 0;
-			if (CalculatedValue1 >= 10) {
-				Carry++;
-				CalculatedValue1 -= 10;
-			}
-			CalculatedValue2 = bitwisereadright(reinterpret_cast<unsigned char*>(First)[i + sizeof(int)]) + bitwisereadright(reinterpret_cast<unsigned char*>(Second)[i + sizeof(int)]) + Carry;
-			Carry = 0;
-			if (CalculatedValue2 >= 10) {
-				Carry++;
-				CalculatedValue2 -= 10;
-			}
-			bitwisewriteleftptr(&reinterpret_cast<unsigned char*>(ReturnValue)[i + sizeof(int)], CalculatedValue1);
-			bitwisewriterightptr(&reinterpret_cast<unsigned char*>(ReturnValue)[i + sizeof(int)], CalculatedValue2);
-		}
-
-		if (Carry > 0)
-			IntSetPlace(&ReturnValue, SizeLarge * 2 + 1, Carry);
-
-		return ReturnValue;
-	}
+	return ReturnValue;
 }
