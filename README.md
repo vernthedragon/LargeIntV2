@@ -26,3 +26,5 @@
   </p>
 
 ## Information
+
+The general method of function is defined through arrays. Each pointer, by default, contains a integer which defines the length of the allocated array within. A positive integer indicates a positive large integer. Likewise, a negative integer indicates a negative large integer. Each allocated byte is split into two sections, "left" and "right". Each byte can hold two places/unit (e.g. 24 is 2 places, 19520 is 5 places); one bit is wasted due to padding because 2^4-1=15, 2^3-1=7 (too small), 2^5-1=31 (too large). The **following** diagramn describes the prior explanation.
