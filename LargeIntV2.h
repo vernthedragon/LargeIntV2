@@ -182,7 +182,7 @@ bool IntNotEqual(void* A, void* B) {
 void* IntAdd(void* First, void* Second) {
 	void* ReturnValue = nullptr;
 
-	if (IntGetSign(First) == IntGetSign(Second)) { //both positive
+	if (IntGetSign(First) == IntGetSign(Second)) { //both positive or negative
 		//add from the smallest to largest place
 		int Sizes[3] = { abs(IntGetSize(First)),abs(IntGetSize(Second)), 0 }; // [0] = FirstSize, [1] = SecondSize, [2] = LargestSize
 		Sizes[2] = Sizes[0];
